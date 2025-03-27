@@ -108,7 +108,7 @@ class Equation {
 class ResultBall {
     constructor(value, index) {
         this.value = value;
-        this.index = 
+        this.index = index;
         this.element = this.createElement(value);
         this.dragHandler = this.drag.bind(this);
         this.stopDragHandler = this.stopDrag.bind(this);
@@ -127,6 +127,8 @@ class ResultBall {
     }
 
     startDrag(event) {
+        console.log("Arrastando bola ", this.value);
+
         this.offsetX = event.clientX - this.element.offsetLeft;
         this.offsetY = event.clientY - this.element.offsetTop;
         this.element.style.cursor = "grabbing";
@@ -150,7 +152,13 @@ class ResultBall {
         this.draggingElement.style.top = `${event.clientY - this.offsetY}px`;
     }
 
-    stopDrag() {
+    stopDrag(event) {
+        const canvasRect = gCanvas.getBoundingClientRect();
+        const relativeX = event.clientX - canvasRect.left;
+        const relativeY = event.clientY - canvasRect.top;
+
+        console.log("Largando bola ", this.value, " na posição ", { x: relativeX, y: relativeY }, " relativa ao canvas.");
+
         this.element.style.cursor = "grab";
 
         // Remove the duplicate ball
@@ -164,7 +172,7 @@ class ResultBall {
         document.removeEventListener("mouseup", this.stopDragHandler);
     }
 
-    display() {
+    displayOnNumberPool() {
         UI.numberPool.appendChild(this.element);
     }
 }
@@ -236,7 +244,7 @@ function bRegenerateCallback(e) {
 
     for (let i = 0; i < shuffledResults.length; i++) {
         const resultBall = new ResultBall(shuffledResults[i], i);
-        resultBall.display();
+        resultBall.displayOnNumberPool();
     }
 
     console.log("Bolinhas dos resultados geradas.");
