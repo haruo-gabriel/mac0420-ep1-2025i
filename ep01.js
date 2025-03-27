@@ -56,7 +56,6 @@ var UI = {
     bRegenerate : document.getElementById("bRegenerate"),
     numberPool : document.getElementById("numberPool"),
     equationsArray : [],
-    resultsArray : []
 }
 
 // ==================================================================
@@ -69,7 +68,7 @@ class Equation {
         this.operator = '';
         this.result = 0;
         this.position = { x: 0, y: 0 };
-        this.hasBall = false;
+        this.ball = null;
     }
 
     generateRandomEquation() {
@@ -89,19 +88,19 @@ class Equation {
     }
 
     displayEquation(origin) {
-        const x = origin.x;
-        const y = origin.y;
+        this.position.x = origin.x;
+        this.position.y = origin.y;
 
         // Desenha o background em cinza
         gCtx.fillStyle = COR_CINZA;
-        gCtx.fillRect(x + 5, y + 5, gCellWidth - 10, gCellHeight - 10);
+        gCtx.fillRect(this.position.x + 5, this.position.y + 5, gCellWidth - 10, gCellHeight - 10);
 
         // Desenha o texto da equação em preto
         gCtx.fillStyle = 'black';
         gCtx.font = BG_FONT;
         gCtx.textAlign = "center";
         gCtx.textBaseline = "middle";
-        gCtx.fillText(this.toString(), x + gCellWidth / 2, y + gCellHeight / 2);
+        gCtx.fillText(this.toString(), this.position.x + gCellWidth / 2, this.position.y + gCellHeight / 2);
     }
 }
 
@@ -157,9 +156,42 @@ class ResultBall {
         const relativeX = event.clientX - canvasRect.left;
         const relativeY = event.clientY - canvasRect.top;
 
-        console.log("Largando bola ", this.value, " na posição ", { x: relativeX, y: relativeY }, " relativa ao canvas.");
+        // console.log("Largando bola ", this.value, " na posição ", { x: relativeX, y: relativeY }, " relativa ao canvas.");
 
         this.element.style.cursor = "grab";
+
+        // Checa se a bola caiu em algum retângulo de equação
+        let snapped = false;
+        for (let equation of UI.equationsArray) {
+            const eqX = equation.position.x;
+            const eqY = equation.position.y;
+
+            if (this.isInsideEquation(relativeX, relativeY, eqX, eqY)) {
+                // Snap the ball to the bottom center of the equation rectangle
+                this.element.style.position = "absolute";
+                this.element.style.left = `${canvasRect.left + eqX}px`;
+                this.element.style.top = `${canvasRect.top + eqY}px`;
+
+                snapped = true;
+
+                // Adiciona a bola na equação
+                equation.ball = this;
+                console.log("Largando bola ", this.value, " na equação ", equation);
+
+                // Fixa a bola na equação
+                this.element.onmousedown = null;
+
+                break;
+            }
+        }
+
+        // If the ball is not snapped to any equation, return it to the numberPool
+        if (!snapped) {
+            console.log("Bola não foi largada em nenhuma equação. Retornando ao numberPool.");
+            this.element.style.position = "relative";
+            this.element.style.left = "0px";
+            this.element.style.top = "0px";
+        }
 
         // Remove the duplicate ball
         if (this.draggingElement) {
@@ -170,10 +202,26 @@ class ResultBall {
         // Remove the event listeners to stop dragging
         document.removeEventListener("mousemove", this.dragHandler);
         document.removeEventListener("mouseup", this.stopDragHandler);
+
+        // Check if all balls are placed
+        if (allBallsPlaced()) {
+            console.log("Todas as bolas foram posicionadas.");
+        } else {
+            console.log("Ainda há bolas soltas.");
+        }
     }
 
     displayOnNumberPool() {
         UI.numberPool.appendChild(this.element);
+    }
+
+    isInsideEquation(relativeX, relativeY, eqX, eqY) {
+        return (
+                relativeX >= eqX &&
+                relativeX <= eqX + gCellWidth &&
+                relativeY >= eqY &&
+                relativeY <= eqY + gCellHeight
+               );
     }
 }
 // ==================================================================
@@ -194,6 +242,8 @@ function main() {
 
 function bRegenerateCallback(e) {
     console.log("Recriando tabuleiro.");
+
+    UI.bCheck.disabled = true;
 
     let nRows = parseInt(document.getElementById("nRows").value);
     let nColumns = parseInt(document.getElementById("nCols").value);
@@ -232,7 +282,6 @@ function bRegenerateCallback(e) {
 
     console.log("Equações renderizadas no canvas.");
 
-    UI.resultsArray = [];
     UI.numberPool.innerHTML = "";
 
     console.log("Gerando as bolinhas dos resultados.");
@@ -248,8 +297,20 @@ function bRegenerateCallback(e) {
     }
 
     console.log("Bolinhas dos resultados geradas.");
-    console.log("numberPool: ", UI.numberPool);
+    // console.log("numberPool: ", UI.numberPool);
+}
+
+function allBallsPlaced() {
+    for (let equation of UI.equationsArray) {
+        if (equation.ball === null || equation.ball === undefined) {
+            return false;
+        }
+    }
+
+    UI.bCheck.disabled = false;
+    return true;
 }
 
 function bCheckCallback(e) {
+    
 }
