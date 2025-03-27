@@ -118,8 +118,6 @@ class ResultBall {
         let div = document.createElement("div");
         div.classList.add("number");
         div.textContent = value;
-        div.style.position = "absolute";
-        div.style.cursor = "grab";
         return div;
     }
 
