@@ -69,6 +69,7 @@ class Equation {
         this.operator = '';
         this.result = 0;
         this.position = { x: 0, y: 0 };
+        this.hasBall = false;
     }
 
     generateRandomEquation() {
@@ -107,21 +108,52 @@ class Equation {
 class ResultBall {
     constructor(value) {
         this.value = value;
-        this.element = this.createElement();
+        this.element = this.createElement(value);
+        this.dragHandler = this.drag.bind(this);
+        this.stopDragHandler = this.stopDrag.bind(this);
+        this.addEventListeners();
     }
 
-    createElement() {
+    createElement(value) {
         let div = document.createElement("div");
         div.classList.add("number");
-        div.textContent = this.value;
+        div.textContent = value;
+        div.style.position = "absolute";
+        div.style.cursor = "grab";
         return div;
+    }
+
+    addEventListeners() {
+        this.element.onmousedown = this.startDrag.bind(this);
+    }
+
+    startDrag(event) {
+        this.offsetX = event.clientX - this.element.offsetLeft;
+        this.offsetY = event.clientY - this.element.offsetTop;
+        this.element.style.cursor = "grabbing";
+
+        // Add event listeners for dragging and stopping the drag
+        document.addEventListener("mousemove", this.dragHandler);
+        document.addEventListener("mouseup", this.stopDragHandler);
+    }
+
+    drag(event) {
+        this.element.style.left = `${event.clientX - this.offsetX}px`;
+        this.element.style.top = `${event.clientY - this.offsetY}px`;
+    }
+
+    stopDrag() {
+        this.element.style.cursor = "grab";
+
+        // Remove the event listeners to stop dragging
+        document.removeEventListener("mousemove", this.dragHandler);
+        document.removeEventListener("mouseup", this.stopDragHandler);
     }
 
     display() {
         UI.numberPool.appendChild(this.element);
     }
 }
-
 
 // ==================================================================
 
@@ -179,16 +211,12 @@ function bRegenerateCallback(e) {
 
     console.log("Equações renderizadas no canvas.");
 
-    // Limpa o array dos resultados
     UI.resultsArray = [];
-    
-    // Limpa o div dos resultados
     UI.numberPool.innerHTML = "";
 
-    // Pinta as bolinhas dos resultados
     console.log("Gerando as bolinhas dos resultados.");
 
-    // Embaralha as bolinhas
+    // Embaralha o valor dos resultados
     let shuffledResults = UI.equationsArray
         .map(equation => equation.result)
         .sort(() => Math.random() - 0.5);
@@ -199,6 +227,7 @@ function bRegenerateCallback(e) {
     }
 
     console.log("Bolinhas dos resultados geradas.");
+    console.log("numberPool: ", UI.numberPool);
 }
 
 function bCheckCallback(e) {
