@@ -130,18 +130,33 @@ class ResultBall {
         this.offsetY = event.clientY - this.element.offsetTop;
         this.element.style.cursor = "grabbing";
 
+        // Create a duplicate ball for dragging
+        this.draggingElement = this.createElement(this.value);
+        this.draggingElement.style.position = "absolute";
+        this.draggingElement.style.pointerEvents = "none"; // Prevent interaction with the duplicate
+        this.draggingElement.style.left = `${event.clientX - this.offsetX}px`;
+        this.draggingElement.style.top = `${event.clientY - this.offsetY}px`;
+        document.body.appendChild(this.draggingElement);
+
         // Add event listeners for dragging and stopping the drag
         document.addEventListener("mousemove", this.dragHandler);
         document.addEventListener("mouseup", this.stopDragHandler);
     }
 
     drag(event) {
-        this.element.style.left = `${event.clientX - this.offsetX}px`;
-        this.element.style.top = `${event.clientY - this.offsetY}px`;
+        // Move the duplicate ball with the cursor
+        this.draggingElement.style.left = `${event.clientX - this.offsetX}px`;
+        this.draggingElement.style.top = `${event.clientY - this.offsetY}px`;
     }
 
     stopDrag() {
         this.element.style.cursor = "grab";
+
+        // Remove the duplicate ball
+        if (this.draggingElement) {
+            document.body.removeChild(this.draggingElement);
+            this.draggingElement = null;
+        }
 
         // Remove the event listeners to stop dragging
         document.removeEventListener("mousemove", this.dragHandler);
@@ -152,7 +167,6 @@ class ResultBall {
         UI.numberPool.appendChild(this.element);
     }
 }
-
 // ==================================================================
 
 window.onload = main;
