@@ -102,24 +102,23 @@ class Equation {
         gCtx.textBaseline = "middle";
         gCtx.fillText(this.toString(), x + gCellWidth / 2, y + gCellHeight / 2);
     }
-    // displayResult() {
-    //     const resultDiv = document.createElement('div');
-    //     resultDiv.classList.add('number');
-    //     resultDiv.textContent = this.result;
-    //     UInumberPool.appendChild(resultDiv);
-    // }
 }
 
 class ResultBall {
     constructor(value) {
         this.value = value;
+        this.element = this.createElement();
     }
 
-    display() {
+    createElement() {
         let div = document.createElement("div");
         div.classList.add("number");
         div.textContent = this.value;
-        UI.numberPool.appendChild(div);
+        return div;
+    }
+
+    display() {
+        UI.numberPool.appendChild(this.element);
     }
 }
 
