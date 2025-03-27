@@ -102,12 +102,19 @@ class Equation {
         gCtx.textBaseline = "middle";
         gCtx.fillText(this.toString(), this.position.x + gCellWidth / 2, this.position.y + gCellHeight / 2);
     }
+
+    hasBall() {
+        if (this.ball === null || this.ball === undefined) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
 
 class ResultBall {
-    constructor(value, index) {
+    constructor(value) {
         this.value = value;
-        this.index = index;
         this.element = this.createElement(value);
         this.dragHandler = this.drag.bind(this);
         this.stopDragHandler = this.stopDrag.bind(this);
@@ -156,8 +163,6 @@ class ResultBall {
         const relativeX = event.clientX - canvasRect.left;
         const relativeY = event.clientY - canvasRect.top;
 
-        // console.log("Largando bola ", this.value, " na posição ", { x: relativeX, y: relativeY }, " relativa ao canvas.");
-
         this.element.style.cursor = "grab";
 
         // Checa se a bola caiu em algum retângulo de equação
@@ -166,8 +171,7 @@ class ResultBall {
             const eqX = equation.position.x;
             const eqY = equation.position.y;
 
-            if (this.isInsideEquation(relativeX, relativeY, eqX, eqY)) {
-                // Snap the ball to the bottom center of the equation rectangle
+            if (this.isInsideEquation(relativeX, relativeY, eqX, eqY) && !equation.hasBall()) {
                 this.element.style.position = "absolute";
                 this.element.style.left = `${canvasRect.left + eqX}px`;
                 this.element.style.top = `${canvasRect.top + eqY}px`;
@@ -221,7 +225,7 @@ class ResultBall {
                 relativeX <= eqX + gCellWidth &&
                 relativeY >= eqY &&
                 relativeY <= eqY + gCellHeight
-               );
+                );
     }
 }
 // ==================================================================
@@ -240,7 +244,7 @@ function main() {
     UI.bCheck.onclick = bCheckCallback;
 }
 
-function bRegenerateCallback(e) {
+function bRegenerateCallback(event) {
     console.log("Recriando tabuleiro.");
 
     UI.bCheck.disabled = true;
@@ -291,8 +295,8 @@ function bRegenerateCallback(e) {
         .map(equation => equation.result)
         .sort(() => Math.random() - 0.5);
 
-    for (let i = 0; i < shuffledResults.length; i++) {
-        const resultBall = new ResultBall(shuffledResults[i], i);
+    for (let result of shuffledResults) {
+        const resultBall = new ResultBall(result);
         resultBall.displayOnNumberPool();
     }
 
@@ -302,15 +306,13 @@ function bRegenerateCallback(e) {
 
 function allBallsPlaced() {
     for (let equation of UI.equationsArray) {
-        if (equation.ball === null || equation.ball === undefined) {
+        if (!equation.hasBall()){
             return false;
         }
     }
-
     UI.bCheck.disabled = false;
     return true;
 }
 
-function bCheckCallback(e) {
-    
+function bCheckCallback(event) {
 }
