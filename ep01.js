@@ -106,8 +106,9 @@ class Equation {
 }
 
 class ResultBall {
-    constructor(value) {
+    constructor(value, index) {
         this.value = value;
+        this.index = 
         this.element = this.createElement(value);
         this.dragHandler = this.drag.bind(this);
         this.stopDragHandler = this.stopDrag.bind(this);
@@ -233,8 +234,8 @@ function bRegenerateCallback(e) {
         .map(equation => equation.result)
         .sort(() => Math.random() - 0.5);
 
-    for (let result of shuffledResults) {
-        const resultBall = new ResultBall(result);
+    for (let i = 0; i < shuffledResults.length; i++) {
+        const resultBall = new ResultBall(shuffledResults[i], i);
         resultBall.display();
     }
 
