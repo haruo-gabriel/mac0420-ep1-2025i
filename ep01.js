@@ -52,9 +52,10 @@ var gCellWidth;
 var gCellHeight;
 
 var UI = {
-    bCheck : document.getElementById("bCheck"),
     bRegenerate : document.getElementById("bRegenerate"),
     numberPool : document.getElementById("numberPool"),
+    bCheck : document.getElementById("bCheck"),
+    pFinalResult : document.getElementById("pFinalResult"),
     equationsArray : [],
 }
 
@@ -95,6 +96,15 @@ class Equation {
         }
     }
 
+    // Desenha o texto da equação em preto
+    drawEquationText(origin) {
+        gCtx.fillStyle = 'black';
+        gCtx.font = BG_FONT;
+        gCtx.textAlign = "center";
+        gCtx.textBaseline = "middle";
+        gCtx.fillText(this.toString(), this.position.x + gCellWidth / 2, this.position.y + gCellHeight / 2);
+    }
+
     displayEquation(origin) {
         this.position.x = origin.x;
         this.position.y = origin.y;
@@ -103,14 +113,17 @@ class Equation {
         gCtx.fillStyle = COR_CINZA;
         gCtx.fillRect(this.position.x + 5, this.position.y + 5, gCellWidth - 10, gCellHeight - 10);
 
-        // Desenha o texto da equação em preto
-        gCtx.fillStyle = 'black';
-        gCtx.font = BG_FONT;
-        gCtx.textAlign = "center";
-        gCtx.textBaseline = "middle";
-        gCtx.fillText(this.toString(), this.position.x + gCellWidth / 2, this.position.y + gCellHeight / 2);
+        this.drawEquationText()
     }
 
+    changeBackgroundColor(correct) {
+        let color = correct ? COR_CERTA : COR_ERRADA;
+
+        gCtx.fillStyle = color;
+        gCtx.fillRect(this.position.x + 5, this.position.y + 5, gCellWidth - 10, gCellHeight - 10);
+
+        this.drawEquationText(origin);
+    }
 }
 
 class ResultBall {
@@ -248,6 +261,9 @@ function main() {
 function bRegenerateCallback(event) {
     console.log("Recriando tabuleiro.");
 
+    // Limpa o parágrafo de resultado final 
+    UI.pFinalResult.textContent = "";
+
     UI.bCheck.disabled = true;
 
     let nRows = parseInt(document.getElementById("nRows").value);
@@ -344,12 +360,15 @@ function bCheckCallback(event) {
     
     let correctCount = 0;
     for (let equation of UI.equationsArray) {
-        if (checkEquationAndBall(equation)) {
-            correctCount++;
-        }
+        let correct = checkEquationAndBall(equation);
+        if (correct) correctCount++;
+        equation.changeBackgroundColor(correct);
     }
     
-    console.log(`You got ${correctCount} out of ${UI.equationsArray.length} correct.`);
+    console.log(`Você acertou ${correctCount} de ${UI.equationsArray.length}.`);
+
+    UI.pFinalResult.textContent = `Você ganhou ${correctCount} pontos.`;
+
     // Optionally disable further checking after a submission:
     UI.bCheck.disabled = true;
 }
