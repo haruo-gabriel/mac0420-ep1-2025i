@@ -30,6 +30,9 @@
 
     Descrição de ajuda ou indicação de fonte:
 
+    - Uso de classes no javascript: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
+    - Algumas perguntas no stack overflow de javascript
+
 
 
 ================================================== */
@@ -72,6 +75,7 @@ class Equation {
         this.ball = null;
     }
 
+    // Gera uma equação de soma ou subtração aleatoriamente
     generateRandomEquation() {
         this.num1 = Math.floor(Math.random() * (MAX_NUM - MIN_NUM + 1)) + MIN_NUM;
         this.num2 = Math.floor(Math.random() * (MAX_NUM - MIN_NUM + 1)) + MIN_NUM;
@@ -88,6 +92,7 @@ class Equation {
         return `${this.num1} ${this.operator} ${this.num2}`;
     }
 
+    // Checa se alguma bola foi arrastada e presa na equação
     hasBall() {
         if (this.ball === null || this.ball === undefined) {
             return false;
@@ -116,7 +121,7 @@ class Equation {
         this.drawEquationText()
     }
 
-    changeBackgroundColor(correct) {
+    changeBgColorOnCheck(correct) {
         let color = correct ? COR_CERTA : COR_ERRADA;
 
         gCtx.fillStyle = color;
@@ -135,6 +140,7 @@ class ResultBall {
         this.addEventListeners();
     }
 
+    // Cria o elemento HTML da bolinha
     createElement(value) {
         let div = document.createElement("div");
         div.classList.add("number");
@@ -142,6 +148,7 @@ class ResultBall {
         return div;
     }
 
+    // Adiciona os event listeners de arrastar
     addEventListeners() {
         this.element.onmousedown = this.startDrag.bind(this);
     }
@@ -149,25 +156,25 @@ class ResultBall {
     startDrag(event) {
         console.log("Arrastando bola ", this.value);
 
+        // Calcula o deslocamento inicial entre o mouse e a posição da bolinha
         this.offsetX = event.clientX - this.element.offsetLeft;
         this.offsetY = event.clientY - this.element.offsetTop;
         this.element.style.cursor = "grabbing";
 
-        // Create a duplicate ball for dragging
+        // Cria uma cópia da bolinha para ser arrastada
         this.draggingElement = this.createElement(this.value);
         this.draggingElement.style.position = "absolute";
-        this.draggingElement.style.pointerEvents = "none"; // Prevent interaction with the duplicate
+        this.draggingElement.style.pointerEvents = "none";
         this.draggingElement.style.left = `${event.clientX - this.offsetX}px`;
         this.draggingElement.style.top = `${event.clientY - this.offsetY}px`;
         document.body.appendChild(this.draggingElement);
 
-        // Add event listeners for dragging and stopping the drag
+        // Adiciona event listeners para acompanhar o movimento do mouse e parar o movimento
         document.addEventListener("mousemove", this.dragHandler);
         document.addEventListener("mouseup", this.stopDragHandler);
     }
 
     drag(event) {
-        // Move the duplicate ball with the cursor
         this.draggingElement.style.left = `${event.clientX - this.offsetX}px`;
         this.draggingElement.style.top = `${event.clientY - this.offsetY}px`;
     }
@@ -179,7 +186,7 @@ class ResultBall {
 
         this.element.style.cursor = "grab";
 
-        // Checa se a bola caiu em algum retângulo de equação
+        // Checa se a bolinha caiu em algum retângulo de equação
         let snapped = false;
         for (let equation of UI.equationsArray) {
             const eqX = equation.position.x;
@@ -203,7 +210,7 @@ class ResultBall {
             }
         }
 
-        // If the ball is not snapped to any equation, return it to the numberPool
+        // Se a bolinha não for encaixada em nenhuma equação, retorne-a para o numberPool
         if (!snapped) {
             console.log("Bola não foi largada em nenhuma equação. Retornando ao numberPool.");
             this.element.style.position = "relative";
@@ -211,17 +218,17 @@ class ResultBall {
             this.element.style.top = "0px";
         }
 
-        // Remove the duplicate ball
+        // Remove a bolinha duplicada
         if (this.draggingElement) {
             document.body.removeChild(this.draggingElement);
             this.draggingElement = null;
         }
 
-        // Remove the event listeners to stop dragging
+        // Remove os event listeners para parar de arrastar
         document.removeEventListener("mousemove", this.dragHandler);
         document.removeEventListener("mouseup", this.stopDragHandler);
 
-        // Check if all balls are placed
+        // Verifica se todas as bolas foram posicionadas em alguma equação
         if (allBallsPlaced()) {
             console.log("Todas as bolas foram posicionadas.");
         } else {
@@ -229,10 +236,13 @@ class ResultBall {
         }
     }
 
+    // Mostra a bolinha gerada na tela
     displayOnNumberPool() {
         UI.numberPool.appendChild(this.element);
     }
 
+    // Retorna true se a bola foi movida para dentro da área de uma equação,
+    // ou false, caso contrário.
     isInsideEquation(relativeX, relativeY, eqX, eqY) {
         return (
                 relativeX >= eqX &&
@@ -248,6 +258,7 @@ window.onload = main;
 
 
 function main() {
+    // Setup do canvas 2d
     gCanvas = document.getElementById("gridCanvas");
     gCtx = gCanvas.getContext("2d");
 
@@ -264,12 +275,12 @@ function bRegenerateCallback(event) {
     // Limpa o parágrafo de resultado final 
     UI.pFinalResult.textContent = "";
 
+    // Desabilita o botão de Enviar
     UI.bCheck.disabled = true;
 
     let nRows = parseInt(document.getElementById("nRows").value);
     let nColumns = parseInt(document.getElementById("nCols").value);
     let nEquations = nRows * nColumns;
-
     gCellWidth = gCanvas.width / nColumns;
     gCellHeight = gCanvas.height / nRows;
 
@@ -289,7 +300,7 @@ function bRegenerateCallback(event) {
     console.log("Limpando o canvas.");
     gCtx.clearRect(0, 0, gCanvas.width, gCanvas.height);
 
-    // Pinta as equações no canvas
+    // Desenha as equações no canvas
     console.log("Gerando equações no canvas.");
 
     for (let i = 0; i < nRows; i++) {
@@ -303,11 +314,12 @@ function bRegenerateCallback(event) {
 
     console.log("Equações renderizadas no canvas.");
 
+    // Limpa o numberPool para alocar as novas bolinhas
     UI.numberPool.innerHTML = "";
 
     console.log("Gerando as bolinhas dos resultados.");
 
-    // Embaralha o valor dos resultados
+    // Embaralha o valor dos resultados e cria as bolinhas
     let shuffledResults = UI.equationsArray
         .map(equation => equation.result)
         .sort(() => Math.random() - 0.5);
@@ -318,9 +330,9 @@ function bRegenerateCallback(event) {
     }
 
     console.log("Bolinhas dos resultados geradas.");
-    // console.log("numberPool: ", UI.numberPool);
 }
 
+// Checa se todas as bolas estão posicionadas em uma equação
 function allBallsPlaced() {
     for (let equation of UI.equationsArray) {
         if (!equation.hasBall()){
@@ -331,6 +343,7 @@ function allBallsPlaced() {
     return true;
 }
 
+// Checa se a bola posicionada na equação bate com o resultado esperado
 function checkEquationAndBall(equation) {
     if (equation.ball) {
         let equationResult = equation.result;
@@ -350,25 +363,19 @@ function checkEquationAndBall(equation) {
     }
 }
 
-// Called when the "Check" button is clicked.
-// It runs the check on every equation and logs the final count of correct matches.
 function bCheckCallback(event) {
-    // If the button is disabled, do nothing.
-    if (UI.bCheck.disabled) {
-        return;
-    }
-    
+    // Checa se todas as equações batem com as bolinhas
     let correctCount = 0;
     for (let equation of UI.equationsArray) {
         let correct = checkEquationAndBall(equation);
         if (correct) correctCount++;
-        equation.changeBackgroundColor(correct);
+        equation.changeBgColorOnCheck(correct);
     }
     
     console.log(`Você acertou ${correctCount} de ${UI.equationsArray.length}.`);
 
+    // Mostra o resultado final abaixo do botão de enviar resposta
     UI.pFinalResult.textContent = `Você ganhou ${correctCount} pontos.`;
 
-    // Optionally disable further checking after a submission:
     UI.bCheck.disabled = true;
 }
