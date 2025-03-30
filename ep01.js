@@ -201,7 +201,7 @@ class ResultBall {
 
                 // Adiciona a bola na equação
                 equation.ball = this;
-                console.log("Largando bola ", this.value, " na equação ", equation);
+                console.log("Largando bola ", this.value, " na equação ", equation.toString());
 
                 // Fixa a bola na equação
                 this.element.onmousedown = null;
