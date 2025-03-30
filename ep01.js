@@ -87,6 +87,14 @@ class Equation {
         return `${this.num1} ${this.operator} ${this.num2}`;
     }
 
+    hasBall() {
+        if (this.ball === null || this.ball === undefined) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     displayEquation(origin) {
         this.position.x = origin.x;
         this.position.y = origin.y;
@@ -103,13 +111,6 @@ class Equation {
         gCtx.fillText(this.toString(), this.position.x + gCellWidth / 2, this.position.y + gCellHeight / 2);
     }
 
-    hasBall() {
-        if (this.ball === null || this.ball === undefined) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 }
 
 class ResultBall {
@@ -314,5 +315,41 @@ function allBallsPlaced() {
     return true;
 }
 
+function checkEquationAndBall(equation) {
+    if (equation.ball) {
+        let equationResult = equation.result;
+        let ballValue = equation.ball.value;
+        let equationString = equation.toString();
+
+        if (ballValue === equationResult) {
+            console.log("A bola", ballValue, "confere com a equação", equationString, "=", equationResult);
+            return true;
+        } else {
+            console.error("Erro: A bola", ballValue, "não confere com a equação", equationString, "=", equationResult);
+            return false;
+        }
+    } else {
+        console.error("Erro: Nenhuma bola foi associada à equação", equation.toString());
+        return false;
+    }
+}
+
+// Called when the "Check" button is clicked.
+// It runs the check on every equation and logs the final count of correct matches.
 function bCheckCallback(event) {
+    // If the button is disabled, do nothing.
+    if (UI.bCheck.disabled) {
+        return;
+    }
+    
+    let correctCount = 0;
+    for (let equation of UI.equationsArray) {
+        if (checkEquationAndBall(equation)) {
+            correctCount++;
+        }
+    }
+    
+    console.log(`You got ${correctCount} out of ${UI.equationsArray.length} correct.`);
+    // Optionally disable further checking after a submission:
+    UI.bCheck.disabled = true;
 }
